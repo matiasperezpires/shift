@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shift - Prototipo Maestro</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ==================== RESET Y VARIABLES ==================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #16140F; --paper: #F6F1E7; --paper-warm: #EFE7D8;
+  --clay: #C1602B; --clay-deep: #9A4A1F; --moss: #4A5A3E;
+  --line: rgba(22,20,15,0.12); --muted: #6B6555;
+  --alert: #D9381E; --success: #2E7D32; --warning: #F57C00;
+}
+body { font-family: 'Inter', sans-serif; background: #E8E2D3; color: var(--ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; margin: 0; }
+
+/* Ocultador Maestro */
+.d-none { display: none !important; }
+
+/* ==================== DISPOSITIVO: MODO CELULAR (Default) ==================== */
+.phone-frame { max-width: 390px; width: 100%; height: 844px; background: var(--paper); border-radius: 32px; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.3); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+
+/* Vistas Celular */
+.vista-wrapper { display: flex; flex-direction: column; flex: 1; height: 100%; width: 100%; background: var(--paper); }
+.desktop-card-wrapper { display: flex; flex-direction: column; flex: 1; height: 100%; width: 100%; }
+
+/* ==================== DISPOSITIVO: MODO COMPUTADORA (Web) ==================== */
+body.desktop-mode { padding: 0; height: 100vh; overflow: hidden; }
+body.desktop-mode .phone-frame { max-width: 100vw; width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; background: var(--paper); }
+
+/* Grilla Web Cliente */
+body.desktop-mode #vista-cliente { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: 75px 1fr; height: 100vh; max-height: 100vh; width: 100%; background: var(--paper); }
+body.desktop-mode .topbar { grid-column: 2; grid-row: 1; border-bottom: 1px solid var(--line); background: var(--paper); padding: 0 40px; }
+body.desktop-mode .tab-content { grid-column: 2; grid-row: 2; padding: 40px; overflow-y: auto; max-width: 1000px; margin: 0 auto; width: 100%; min-height: 0; }
+body.desktop-mode .tab-content.active { display: flex; }
+
+/* Sidebar Nav Web */
+body.desktop-mode .bottom-nav { grid-column: 1; grid-row: 1 / 3; display: flex; flex-direction: column; justify-content: flex-start; padding: 32px 0; gap: 8px; border-right: 1px solid var(--line); background: var(--paper); height: 100%; flex-shrink: 0; border-top: none; margin-top: 0; }
+body.desktop-mode .nav-item { flex-direction: row; padding: 16px 32px; font-size: 15px; width: calc(100% - 24px); justify-content: flex-start; gap: 16px; border-radius: 0 100px 100px 0; margin-right: 24px; transition: 0.2s; }
+body.desktop-mode .nav-item.active { background: var(--paper-warm); font-weight: 600; color: var(--ink); }
+
+/* Ajustes de Contenido Web */
+body.desktop-mode .filters { display: flex !important; flex-wrap: wrap; margin-bottom: 32px; flex-shrink: 0; }
+body.desktop-mode .tonight-scroll { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; gap: 16px; display: flex; }
+body.desktop-mode .spot-card { width: calc(33.333% - 11px); min-width: 220px; }
+body.desktop-mode .perfil-form { max-width: 500px; }
+
+/* Modo Local (Restaurante Web) */
+body.desktop-mode #vista-restaurante { background: var(--paper); align-items: center; height: 100vh; overflow-y: auto; }
+body.desktop-mode .content-local { max-width: 1000px; margin: 0 auto; width: 100%; padding: 40px; }
+
+/* Centrado Vistas Detalle/Reserva (Modales flotantes en PC) */
+body.desktop-mode #vista-detalles, body.desktop-mode #vista-reserva { background: rgba(22,20,15,0.4); backdrop-filter: blur(5px); justify-content: center; align-items: center; position: fixed; inset: 0; z-index: 100; height: 100vh; }
+body.desktop-mode .desktop-card-wrapper { max-width: 550px; background: var(--paper); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); height: auto; max-height: 90vh; overflow-y: auto; overflow-x: hidden; border: 1px solid var(--line); }
+body.desktop-mode .detalles-hero { border-radius: 24px 24px 0 0; min-height: 180px; }
+body.desktop-mode .detalles-info { padding: 32px; border-radius: 0; margin-top: 0; background: var(--paper); }
+body.desktop-mode .fixed-bottom-bar { padding: 24px 32px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--paper); z-index: 10; }
+body.desktop-mode #vista-reserva .tab-content { padding: 40px; max-width: 100%; background: var(--paper); }
+
+/* ==================== UI ELEMENTOS (COMPARTIDO) ==================== */
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; z-index: 10; flex-shrink: 0; }
+.topbar.bordered { border-bottom: 1px solid var(--line); }
+.brand { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.brand .dot { color: var(--clay); }
+.badge-rol { font-size: 10px; background: var(--ink); color: var(--paper); padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.top-actions { display: flex; align-items: center; gap: 8px; }
+.switch-btn { font-size: 12px; font-weight: 600; color: var(--ink); background: var(--paper-warm); border: 1px solid var(--line); padding: 6px 12px; border-radius: 100px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Inter'; }
+.btn-primary { width: 100%; padding: 16px; background: var(--ink); color: var(--paper); border: none; border-radius: 16px; font-weight: 600; font-size: 15px; cursor: pointer; transition: transform 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; font-family: 'Inter'; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-secondary { width: 100%; padding: 14px; background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-family: 'Inter'; }
+.header-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; margin-bottom: 4px; }
+.btn-back { background: var(--paper-warm); border: 1px solid var(--line); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+
+/* TABS CLIENTE */
+.tab-content { display: none; flex: 1; flex-direction: column; padding: 10px 24px 0; overflow-y: auto; }
+.tab-content.active { display: flex; }
+.greeting { font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+.hero-title { font-family: 'Fraunces', serif; font-size: 38px; line-height: 1.08; font-weight: 500; margin-bottom: 14px; max-width: 320px; }
+.hero-title em { font-style: italic; color: var(--clay); }
+
+/* Buscador y Componentes */
+.search-container { position: relative; margin-bottom: 24px; flex-shrink: 0; }
+.search-card { background: var(--ink); border-radius: 22px; padding: 6px; display: flex; align-items: center; gap: 4px; position: relative; z-index: 10; }
+.search-input { flex: 1; background: transparent; border: none; color: var(--paper); font-size: 14px; padding: 12px 14px; outline: none; }
+.search-go { background: var(--clay); border: none; border-radius: 16px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; }
+.autocomplete-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--paper); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 20; display: none; padding: 8px 0; border: 1px solid var(--line); max-height: 200px; overflow-y: auto; }
+.autocomplete-item { padding: 12px 16px; font-size: 14px; font-weight: 500; cursor: pointer; border-bottom: 1px solid var(--line); }
+.autocomplete-item:hover { background: var(--paper-warm); }
+
+.filters { display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; flex-shrink: 0; }
+.filter-chip { flex-shrink: 0; padding: 9px 16px; border-radius: 100px; font-size: 12.5px; font-weight: 500; border: 1px solid var(--line); background: var(--paper-warm); cursor: pointer; }
+.section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; margin-top: 24px; flex-shrink: 0; }
+.section-header h2 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; }
+.smart-tag { font-size: 10px; color: var(--clay); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+.tonight-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin: 0 -24px; padding-left: 24px; padding-right: 24px; flex-shrink: 0; }
+.spot-card { flex-shrink: 0; width: 168px; background: white; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); cursor: pointer; transition: 0.2s ease; }
+.spot-photo { height: 96px; display: flex; align-items: flex-end; padding: 10px; }
+.spot-badge { background: rgba(22,20,15,0.55); color: white; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 100px; backdrop-filter: blur(4px); }
+.spot-info { padding: 12px; }
+.spot-name { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+.spot-meta { font-size: 11px; color: var(--muted); }
+
+/* Nav Mobile Default */
+.bottom-nav { display: flex; justify-content: space-around; padding: 14px 24px 18px; background: var(--paper); border-top: 1px solid var(--line); margin-top: auto; z-index: 10; flex-shrink: 0; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; color: var(--muted); font-weight: 500; cursor: pointer; transition: color 0.2s; }
+.nav-item.active { color: var(--ink); }
+.nav-item svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* MIS RESERVAS Y CUENTA */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--muted); padding: 40px 0; }
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; stroke: var(--line); }
+.reserva-activa-card { background: white; border: 1px solid var(--clay); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(193, 96, 43, 0.15); margin-bottom: 16px; position: relative; overflow: hidden; flex-shrink: 0; }
+.res-activa-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.res-activa-title { font-family: 'Fraunces'; font-size: 22px; font-weight: 600; color: var(--ink); }
+.res-activa-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.action-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.action-row:last-child { border-bottom: none; padding-bottom: 0; }
+.toggle-switch { width: 40px; height: 24px; background: var(--line); border-radius: 100px; position: relative; cursor: pointer; transition: 0.3s; }
+.toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+.toggle-switch.active { background: var(--success); }
+.toggle-switch.active::after { transform: translateX(16px); }
+.btn-wsp { background: #25D366; color: white; border: none; padding: 12px 16px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 16px; cursor: pointer; font-family:'Inter'; }
+.btn-calendar { background: white; color: var(--ink); border: 1px solid var(--line); padding: 12px 16px; border-radius: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; margin-top: 12px; cursor: pointer; font-family:'Inter'; }
+
+.avatar-group { display: flex; align-items: center; margin-top: 12px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--clay); color: white; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold; border: 2px solid white; margin-left: -10px; }
+.avatar:first-child { margin-left: 0; }
+.avatar.empty { background: var(--paper-warm); color: var(--muted); border: 2px dashed var(--line); cursor: pointer; }
+
+.perfil-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; flex-shrink: 0; }
+.input-group { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.input-group label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.input-group input, .input-group select, .input-group textarea { padding: 12px; border-radius: 12px; border: 1px solid var(--line); font-family: 'Inter'; background: white; width: 100%; font-size: 14px; outline: none; }
+.tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.tag { background: var(--paper-warm); border: 1px solid var(--line); padding: 6px 12px; border-radius: 100px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.tag-remove { cursor: pointer; color: var(--alert); font-weight: bold; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; background: white; border-radius: 50%; }
+.add-tag-input { background: transparent; border: none; font-size: 12px; font-family: 'Inter'; outline: none; width: 100px; }
+
+/* DETALLES DE RESTAURANTE */
+.detalles-hero { height: 200px; background: linear-gradient(135deg, var(--ink), var(--clay-deep)); position: relative; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+.detalles-top { display: flex; justify-content: space-between; align-items: center; }
+.detalles-btn-back { background: rgba(255,255,255,0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(4px); }
+.detalles-info { background: var(--paper); flex: 1; border-radius: 24px 24px 0 0; margin-top: -20px; padding: 24px; display: flex; flex-direction: column; }
+.detalles-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 600; margin-bottom: 8px; }
+.detalles-stars { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 20px; }
+.star-icon { color: #FFC107; font-size: 18px; }
+.detalles-seccion { margin-bottom: 24px; }
+.detalles-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block; }
+.detalles-desc { font-size: 15px; line-height: 1.5; color: var(--ink); }
+.detalles-links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; margin-bottom: 24px; }
+.fixed-bottom-bar { padding: 16px 24px; background: var(--paper); border-top: 1px solid var(--line); display: flex; gap: 12px; z-index: 10; flex-shrink: 0; }
+
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* VISTA RESTAURANTE (DASHBOARD) */
+.content-local { padding: 24px; flex: 1; overflow-y: auto; }
+.occupancy-container { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+.occupancy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
+.progress-bg { width: 100%; height: 10px; background: var(--paper-warm); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.4s ease; }
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+.metric-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; cursor: pointer; }
+.metric-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin-bottom: 4px; }
+.metric-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.reservation-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; align-items: center; margin-bottom: 12px; }
+.res-time { font-size: 18px; font-weight: 600; color: var(--clay-deep); width: 60px; }
+.res-details { flex: 1; }
+.res-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.res-status { padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; background: #E8F5E9; color: var(--success); }
+.res-status.espera { background: #FFF3E0; color: var(--warning); border: 1px solid #FFCC80; }
+.cancel-btn { background: transparent; border: none; color: var(--alert); font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 4px 0; margin-top: 6px; }
+
+/* MODALES Y TOASTS */
+.modal { display: none; position: fixed; inset: 0; background: rgba(22,20,15,0.7); z-index: 1000; flex-direction: column; justify-content: flex-end; }
+.modal.d-flex { display: flex !important; }
+.modal-content { background: var(--paper); border-radius: 24px 24px 0 0; padding: 24px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 85vh; overflow-y: auto; width: 100%; margin: 0 auto; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.close-btn { background: none; border: none; font-size: 32px; cursor: pointer; color: var(--ink); line-height: 1; }
+.plano { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 16px; background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--line); margin-bottom: 24px; }
+.mesa { aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; cursor: pointer; }
+.mesa.libre { background: var(--success); } .mesa.ocupada { background: var(--alert); }
+
+.fake-map-container { width: 100%; height: 400px; background: #e0e6ed; border-radius: 16px; position: relative; overflow: hidden; margin-bottom: 20px; border: 1px solid var(--line); background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+.map-pin { position: absolute; background: var(--ink); color: white; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; }
+.map-pin::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); border-width: 5px 5px 0; border-style: solid; border-color: var(--ink) transparent transparent transparent; }
+
+.toast-container { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 9999; pointer-events: none; width: 90%; max-width: 350px; }
+body.desktop-mode .toast-container { bottom: 30px; }
+.toast { background: var(--ink); color: var(--paper); padding: 14px 18px; border-radius: 16px; font-size: 13px; font-weight: 500; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.2); animation: slideUpToast 0.3s forwards, fadeOutToast 0.3s 2.7s forwards; opacity: 1; pointer-events: auto; }
+@keyframes slideUpToast { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOutToast { to { opacity: 0; transform: translateY(-10px); } }
+
+.dialog-overlay { position: fixed; inset: 0; background: rgba(22,20,15,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(4px); }
+.dialog-box { background: var(--paper); width: 100%; max-width: 320px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; max-height: 85vh; overflow-y: auto; }
+@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.dialog-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+.dialog-message { font-size: 14px; line-height: 1.5; color: var(--muted); margin-bottom: 24px; white-space: pre-wrap; }
+.dialog-buttons { display: flex; gap: 12px; }
+.dialog-btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; font-family: 'Inter'; transition: 0.1s; display:flex; justify-content:center; align-items:center; }
+.dialog-btn:active { transform: scale(0.98); }
+.dialog-btn-cancel { background: var(--paper-warm); color: var(--ink); border: 1px solid var(--line); }
+.dialog-btn-confirm { background: var(--ink); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<div class="phone-frame" id="contenedor-maestro">
+
+  <div id="vista-cliente" class="vista-wrapper d-none">
+    <div class="topbar">
+      <div class="brand">shift<span class="dot">.</span></div>
+      <div class="top-actions">
+        <button class="switch-btn" id="layout-toggle-btn" onclick="alternarLayoutFisico()">🖥️ Modo PC</button>
+        <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-restaurante')">Modo Local</button>
+      </div>
+    </div>
+
+    <div id="tab-buscar" class="tab-content active">
+      <div class="greeting" id="texto-saludo">Hola 👋</div>
+      <h1 class="hero-title">Tu próxima mesa a <em>un toque</em></h1>
+      
+      <div class="search-container">
+        <div class="search-card">
+          <input class="search-input" id="buscador" type="text" placeholder="Buscar restaurante..." autocomplete="off" />
+          <button class="search-go"><svg viewBox="0 0 24 24" width="16" height="16" stroke="white" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+        </div>
+        <div class="autocomplete-list" id="lista-autocompletado"></div>
+      </div>
+
+      <div class="filters">
+        <div class="filter-chip active">Esta noche</div>
+        <div class="filter-chip" onclick="abrirModal('cercaModal')">📍 Cerca de mí</div>
+        <div class="filter-chip" onclick="abrirModal('filtroModal')" id="btn-filtro-orden">👥 Para 2 (Ordenar)</div>
+      </div>
+
+      <div class="section-header">
+        <div>
+          <span class="smart-tag">Basado en tus gustos 🍔</span>
+          <h2>Recomendados para vos</h2>
+        </div>
+      </div>
+      
+      <div class="tonight-scroll" id="lista-recomendados">
+        <div class="spot-card" data-cercania="15" data-valoracion="4.8" data-tendencia="80" onclick="verDetallesRestaurante('La Carnicería')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #9A4A1F 0%, #C1602B 100%);"><span class="spot-badge">Parrilla top</span></div>
+          <div class="spot-info"><div class="spot-name">La Carnicería</div><div class="spot-meta">Parrilla · 15 min</div></div>
+        </div>
+        <div class="spot-card" data-cercania="2" data-valoracion="4.5" data-tendencia="95" onclick="verDetallesRestaurante('Big Pons')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #4A5A3E 0%, #6B7D58 100%);"><span class="spot-badge">Alta disp.</span></div>
+          <div class="spot-info"><div class="spot-name">Big Pons</div><div class="spot-meta">Hamburguesas · 2 min</div></div>
+        </div>
+        <div class="spot-card" data-cercania="25" data-valoracion="4.9" data-tendencia="100" onclick="verDetallesRestaurante('Don Julio')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);"><span class="spot-badge">Últimas mesas</span></div>
+          <div class="spot-info"><div class="spot-name">Don Julio</div><div class="spot-meta">Parrilla · 25 min</div></div>
+        </div>
+        <div class="spot-card" data-cercania="10" data-valoracion="4.7" data-tendencia="85" onclick="verDetallesRestaurante('Mishiguene')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #16140F 0%, #3D3522 100%);"><span class="spot-badge">Exclusivo</span></div>
+          <div class="spot-info"><div class="spot-name">Mishiguene</div><div class="spot-meta">Moderna · 10 min</div></div>
+        </div>
+        <div class="spot-card" data-cercania="5" data-valoracion="4.8" data-tendencia="90" onclick="verDetallesRestaurante('El Preferido')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #3D3522 0%, #5C5236 100%);"><span class="spot-badge">Mesas al sol</span></div>
+          <div class="spot-info"><div class="spot-name">El Preferido</div><div class="spot-meta">Bodegón · 5 min</div></div>
+        </div>
+      </div>
+
+      <div class="section-header" style="margin-top: 32px;">
+        <div>
+          <span class="smart-tag">Música en vivo 🎸</span>
+          <h2>Cerca de CABA</h2>
+        </div>
+      </div>
+      <div class="tonight-scroll">
+        <div class="spot-card" onclick="verDetallesRestaurante('Makena Cantina')">
+          <div class="spot-photo" style="background: linear-gradient(135deg, #16140F 0%, #3D3522 100%);"><span class="spot-badge">Show 23:00</span></div>
+          <div class="spot-info"><div class="spot-name">Makena Cantina</div><div class="spot-meta">Rock & Bar · 20 min</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-reservas" class="tab-content" style="padding-top: 24px;">
+      <h1 class="header-title">Mis Reservas</h1>
+      <div id="reservas-vacias" class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="48" height="48"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <p style="margin-bottom: 16px; font-weight:500; color: var(--ink);">No tenés reservas activas</p>
+        <button class="btn-secondary" style="width: auto; padding: 10px 24px;" onclick="cambiarTabCliente('tab-buscar', document.getElementById('nav-buscar'))">Explorar lugares</button>
+      </div>
+
+      <div id="contenedor-mis-reservas" style="display:flex; flex-direction:column; gap:16px;"></div>
+    </div>
+
+    <div id="tab-cuenta" class="tab-content" style="padding-top: 24px;">
+      <h1 class="header-title">Mi Perfil</h1>
+      <p style="font-size: 13px; color: var(--muted);">Gestioná tu información personal y preferencias.</p>
+      <div class="perfil-form">
+        <div class="input-group">
+          <label>Nombre Completo</label>
+          <input type="text" id="perfil-nombre" value="Matías Pérez Pires">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="input-group">
+            <label>Edad</label>
+            <input type="number" value="19">
+          </div>
+          <div class="input-group">
+            <label>Ubicación</label>
+            <input type="text" id="input-ubicacion" value="CABA" autocomplete="off">
+            <div class="autocomplete-list" id="lista-auto-ubicacion" style="top: 60px;"></div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Contraseña</label>
+          <input type="password" value="********">
+        </div>
+        <div class="input-group" style="margin-top: 12px;">
+          <label>Mis Intereses y Gustos de Comida</label>
+          <div class="tags-container" id="contenedor-gustos"></div>
+        </div>
+        <button class="btn-secondary" style="margin-top: 16px;" onclick="mostrarToast('Cambios guardados con éxito')">Guardar Cambios</button>
+
+        <hr style="border:none; border-top:1px solid var(--line); margin: 24px 0 8px 0;">
+        <h2 style="font-family:'Fraunces', serif; font-size: 18px; font-weight: 500;">Soporte y Reseñas</h2>
+        <div class="input-group">
+          <textarea placeholder="Dejanos tu comentario o sugerencia acá..." style="resize: vertical; min-height: 80px;"></textarea>
+        </div>
+        <button class="btn-secondary" style="margin-top: 4px;" onclick="enviarQueja(this)">Enviar Comentario</button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active" id="nav-buscar" onclick="cambiarTabCliente('tab-buscar', this)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>Buscar</div>
+      <div class="nav-item" id="nav-reservas" onclick="cambiarTabCliente('tab-reservas', this)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reservas</div>
+      <div class="nav-item" id="nav-cuenta" onclick="cambiarTabCliente('tab-cuenta', this)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Cuenta</div>
+    </div>
+  </div>
+
+  <div id="vista-detalles" class="vista-wrapper d-none">
+    <div class="desktop-card-wrapper">
+      <div class="detalles-hero">
+        <div class="detalles-top">
+          <button class="detalles-btn-back" onclick="cambiarVista('vista-cliente')">←</button>
+          <span class="spot-badge" style="background: rgba(0,0,0,0.6);">Restaurante</span>
+        </div>
+      </div>
+      <div class="detalles-info">
+        <h1 class="detalles-title" id="detalles-nombre">Restaurante</h1>
+        <div class="detalles-stars">
+          <span class="star-icon">★</span> <span id="detalles-estrellas">4.5</span> en Google Maps
+        </div>
+        <div class="detalles-seccion">
+          <span class="detalles-label">Descripción</span>
+          <p class="detalles-desc" id="detalles-desc">Descripción.</p>
+        </div>
+        <div class="detalles-seccion">
+          <span class="detalles-label">Por qué es conocido 🔥</span>
+          <p class="detalles-desc" style="font-weight: 500;" id="detalles-conocido">Especialidad.</p>
+        </div>
+        <div class="detalles-links">
+          <button class="btn-secondary" onclick="window.open('http://maps.google.com', '_blank')">📍 Maps</button>
+          <button class="btn-secondary" onclick="window.open('https://instagram.com', '_blank')">📷 Instagram</button>
+        </div>
+      </div>
+      <div class="fixed-bottom-bar" id="detalles-bottom-bar"></div>
+    </div>
+  </div>
+
+  <div id="vista-reserva" class="vista-wrapper d-none">
+    <div class="desktop-card-wrapper" style="background: var(--paper);">
+      <div class="tab-content active" style="padding:0;">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+          <button class="btn-back" onclick="cambiarVista('vista-detalles')">←</button>
+          <h1 class="header-title" id="titulo-reserva" style="margin:0; font-size:24px;">Local</h1>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+          <div class="input-group">
+            <label>¿Cuántas personas?</label>
+            <input type="number" id="res-personas" value="2" min="1">
+          </div>
+          <div class="input-group">
+            <label>¿Cuándo?</label>
+            <input type="datetime-local" id="res-fecha">
+          </div>
+          <div class="input-group">
+            <label>¿Es una ocasión especial?</label>
+            <select id="res-ocasion">
+              <option value="ninguna">Ninguna en particular</option>
+              <option value="cita">Cita ❤️</option>
+              <option value="cumpleanos">Cumpleaños 🎂</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btn-confirmar-reserva" onclick="procesarReserva()">
+            <span id="btn-text">Confirmar Disponibilidad</span>
+            <div class="spinner" id="btn-spinner"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vista-restaurante" class="vista-wrapper d-none">
+    <div class="topbar bordered">
+      <div class="brand">shift. <span class="badge-rol" id="nombre-local-badge">Modo Panel</span></div>
+      <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-cliente')">Volver a Cliente</button>
+    </div>
+    <div class="content-local">
+      <div class="header-title" style="margin-bottom: 24px;">Servicio Nocturno</div>
+      <div class="occupancy-container">
+        <div class="occupancy-header"><span>Ocupación de Mesas</span><span id="occupancy-text">0%</span></div>
+        <div class="progress-bg"><div class="progress-fill" id="occupancy-bar"></div></div>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card" onclick="abrirModal('mapaLocalModal')">
+          <div class="metric-value" id="total-reservas">1</div>
+          <div class="metric-label">Reservas Hoy 📍</div>
+        </div>
+        <div class="metric-card" onclick="abrirModal('configMesasModal')">
+          <div class="metric-value" id="total-cubiertos">2</div>
+          <div class="metric-label">Cubiertos ⚙️</div>
+        </div>
+      </div>
+      
+      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px;">Líneas de llegada</div>
+      <div id="lista-reservas-local"></div>
+
+      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px; margin-top: 32px; color: var(--clay-deep);">Fila Virtual (Espera)</div>
+      <div id="lista-espera-local"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="mapaLocalModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="header-title" style="font-size: 22px; margin:0;">Plano de Mesas</h2>
+        <button class="close-btn" onclick="cerrarModal('mapaLocalModal')">×</button>
+      </div>
+      <div class="plano" id="contenedor-mesas"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="configMesasModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="header-title" style="font-size: 22px; margin:0;">Ajustar Mesas</h2>
+        <button class="close-btn" onclick="cerrarModal('configMesasModal')">×</button>
+      </div>
+      <div id="lista-config-mesas" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;"></div>
+      <button class="btn-secondary" onclick="agregarMesaConfig()">+ Agregar Mesa Nueva</button>
+      <button class="btn-primary" style="margin-top:24px;" onclick="guardarConfigMesas()">Guardar Cambios</button>
+    </div>
+  </div>
+
+  <div class="modal" id="cercaModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="header-title" style="font-size: 22px; margin:0;">Cerca de mí</h2>
+        <button class="close-btn" onclick="cerrarModal('cercaModal')">×</button>
+      </div>
+      <div class="fake-map-container">
+        <div class="map-pin" style="top: 20%; left: 30%;">Big Pons<br><span style="font-weight:400;">🍔 100m</span></div>
+        <div class="map-pin" style="top: 60%; left: 50%;">Don Julio<br><span style="font-weight:400;">🥩 400m</span></div>
+        <div class="map-pin" style="top: 80%; left: 20%; background: var(--clay);">📍 Estás aquí (CABA)</div>
+      </div>
+      <button class="btn-primary" onclick="cerrarModal('cercaModal')">Entendido</button>
+    </div>
+  </div>
+
+  <div class="modal" id="filtroModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="header-title" style="font-size: 22px; margin:0;">Filtrar y Ordenar</h2>
+        <button class="close-btn" onclick="cerrarModal('filtroModal')">×</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px;">
+          <input type="radio" name="sort" value="cercania" checked> 📍 Mayor Cercanía
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px;">
+          <input type="radio" name="sort" value="valoracion"> ⭐ Mejor Valorados
+        </label>
+        <label style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px;">
+          <input type="radio" name="sort" value="tendencia"> 🔥 Importancia (Tendencia)
+        </label>
+      </div>
+      <button class="btn-primary" onclick="aplicarFiltroOrden()">Aplicar y ver mesas para 2</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <div id="custom-dialog-overlay" class="dialog-overlay" style="display:none;">
+    <div class="dialog-box">
+      <div class="dialog-title" id="custom-dialog-title">Atención</div>
+      <div class="dialog-message" id="custom-dialog-message">Mensaje.</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-cancel" id="custom-dialog-cancel" onclick="cerrarCustomDialog()">Cancelar</button>
+        <button class="dialog-btn dialog-btn-confirm" id="custom-dialog-confirm">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="onboarding-device" style="display:flex;">
+    <div class="dialog-box">
+      <div class="dialog-title">Bienvenido a Shift</div>
+      <div class="dialog-message">Para darte la mejor experiencia, ¿desde dónde nos estás visitando?</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-cancel" onclick="seleccionarDispositivo('mobile')">📱 Celular</button>
+        <button class="dialog-btn dialog-btn-confirm" onclick="seleccionarDispositivo('desktop')">💻 PC</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="onboarding-name" style="display:none;">
+    <div class="dialog-box">
+      <div class="dialog-title">¿Cuál es tu nombre?</div>
+      <div class="input-group" style="margin-bottom: 20px;">
+        <input type="text" id="input-nombre-init" placeholder="Ej: Matías" style="text-align:center; font-size:16px;">
+      </div>
+      <button class="btn-primary" onclick="guardarNombreInit()">Continuar</button>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="onboarding-mvp" style="display:none;">
+    <div class="dialog-box" style="text-align: left; max-width: 400px;">
+      <div class="dialog-title" style="margin-bottom:16px; font-size:24px;">¡Shift V1 MVP! 🚀</div>
+      <div class="dialog-message" style="font-size:13.5px; color:var(--ink);">
+        Esta es la primer versión de shift para conseguir mesa rápido y sin llamar.<br><br>
+        <strong>Próximamente en la V2:</strong><br><br>
+        💸 <b>Pago Invisible:</b> Dividí la cuenta y pagá desde tu dispositivo de forma horizontal y limpia sin fricciones.<br><br>
+        ✨ <b>Efecto VIP:</b> Los restaurantes conocerán tus preferencias gastronómicas antes de que llegues para brindarte una atención más personalizada.<br><br>
+        🏆 <b>Gamificación:</b> Acumulá visitas con tus amigos y desbloqueá colaboraciones exclusivas y platos de regalo de marcas gastronómicas aliadas.
+      </div>
+      <button class="btn-primary" onclick="cerrarOnboardingFinal()">Empezar a usar Shift</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let nombreUsuario = "Matías";
+
+  // Arrays de reservas del cliente
+  let misReservasCliente = [];
+  let filaVirtualLocal = [];
+
+  // --- CONTROLADOR DE LAYOUT DINÁMICO ---
+  function alternarLayoutFisico() {
+    const btn = document.getElementById('layout-toggle-btn');
+    if (document.body.classList.contains('desktop-mode')) {
+      document.body.classList.remove('desktop-mode');
+      btn.innerText = "🖥️ Modo PC";
+      mostrarToast("Vista de Celular activada");
+    } else {
+      document.body.classList.add('desktop-mode');
+      btn.innerText = "📱 Modo Celular";
+      mostrarToast("Vista de Computadora Web activada");
+    }
+  }
+
+  // --- SISTEMA DE DIÁLOGOS NATIVOS CUSTOM ---
+  let dialogCallback = null;
+  function mostrarToast(mensaje) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast'; toast.innerText = mensaje;
+    container.appendChild(toast);
+    setTimeout(() => { toast.remove(); }, 3000);
+  }
+  function mostrarDialogoCustom(titulo, mensaje, esConfirmacion, onAceptar) {
+    document.getElementById('custom-dialog-title').innerText = titulo;
+    document.getElementById('custom-dialog-message').innerText = mensaje;
+    const btnCancel = document.getElementById('custom-dialog-cancel');
+    btnCancel.style.display = esConfirmacion ? 'block' : 'none';
+    dialogCallback = onAceptar;
+    document.getElementById('custom-dialog-overlay').style.display = 'flex';
+  }
+  function cerrarCustomDialog() {
+    document.getElementById('custom-dialog-overlay').style.display = 'none';
+    dialogCallback = null;
+  }
+  document.getElementById('custom-dialog-confirm').addEventListener('click', () => {
+    if(dialogCallback) dialogCallback();
+    cerrarCustomDialog();
+  });
+
+  // --- ONBOARDING FLOW ---
+  function seleccionarDispositivo(tipo) {
+    const btn = document.getElementById('layout-toggle-btn');
+    if(tipo === 'desktop') {
+      document.body.classList.add('desktop-mode');
+      btn.innerText = "📱 Modo Celular";
+    } else {
+      btn.innerText = "🖥️ Modo PC";
+    }
+    document.getElementById('onboarding-device').style.display = 'none';
+    document.getElementById('onboarding-name').style.display = 'flex';
+    document.getElementById('input-nombre-init').focus();
+  }
+  function guardarNombreInit() {
+    let val = document.getElementById('input-nombre-init').value.trim();
+    if(val !== "") {
+      nombreUsuario = val;
+      document.getElementById('texto-saludo').innerText = `Hola, ${nombreUsuario} 👋`;
+      document.getElementById('perfil-nombre').value = nombreUsuario;
+    }
+    document.getElementById('onboarding-name').style.display = 'none';
+    document.getElementById('onboarding-mvp').style.display = 'flex';
+  }
+  function cerrarOnboardingFinal() {
+    document.getElementById('onboarding-mvp').style.display = 'none';
+    cambiarVista('vista-cliente');
+  }
+
+  // --- INICIALIZACIÓN ---
+  window.onload = () => {
+    let now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('res-fecha').value = now.toISOString().slice(0,16);
+    renderMesasYProgreso();
+    renderGustos();
+  };
+
+  // --- NAVEGACIÓN CONTROLADA ---
+  function cambiarVista(idVista) {
+    document.querySelectorAll('.vista-wrapper').forEach(el => el.classList.add('d-none'));
+    document.getElementById(idVista).classList.remove('d-none');
+  }
+
+  function cambiarTabCliente(idTab, element = null) {
+    document.getElementById('tab-buscar').classList.remove('active');
+    document.getElementById('tab-reservas').classList.remove('active');
+    document.getElementById('tab-cuenta').classList.remove('active');
+    
+    document.getElementById(idTab).classList.add('active');
+    
+    if(element) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+  }
+
+  function abrirModal(id) { 
+    if(id === 'configMesasModal') cargarConfigMesas();
+    document.getElementById(id).classList.add('d-flex'); 
+  }
+  function cerrarModal(id) { document.getElementById(id).classList.remove('d-flex'); }
+
+  function aplicarFiltroOrden() {
+    const sortVal = document.querySelector('input[name="sort"]:checked').value;
+    const contenedor = document.getElementById('lista-recomendados');
+    const cards = Array.from(contenedor.getElementsByClassName('spot-card'));
+    cards.sort((a, b) => {
+      if (sortVal === 'cercania') return parseFloat(a.dataset.cercania) - parseFloat(b.dataset.cercania);
+      if (sortVal === 'valoracion') return parseFloat(b.dataset.valoracion) - parseFloat(a.dataset.valoracion);
+      if (sortVal === 'tendencia') return parseFloat(b.dataset.tendencia) - parseFloat(a.dataset.tendencia);
+      return 0;
+    });
+    cards.forEach(card => contenedor.appendChild(card));
+    document.getElementById('btn-filtro-orden').classList.add('active');
+    cerrarModal('filtroModal');
+  }
+
+  // --- DATOS Y DETALLES DE RESTAURANTES ---
+  const infoRestaurantes = {
+    "La Carnicería": { desc: "Parrilla moderna que rompe con lo tradicional, ofreciendo cortes ahumados y de pastura con un ambiente relajado.", conocido: "El gin tonic tirado y su corte de la casa ahumado.", estrellas: 4.8, lleno: false },
+    "Big Pons": { desc: "Hamburguesería de culto estilo americana. Especialistas en técnica smash con ingredientes de primera línea.", conocido: "La famosa 'Big Pons Double' y las papas con cheddar fundido.", estrellas: 4.5, lleno: false },
+    "Don Julio": { desc: "Clásica parrilla argentina reconocida internacionalmente. Carnes premium y la mejor cava de vinos del barrio.", conocido: "El bife de chorizo ancho y la atención de primer nivel.", estrellas: 4.9, lleno: true },
+    "Mishiguene": { desc: "Alta cocina judía moderna. Recetas tradicionales de medio oriente reversionadas con técnicas de autor.", conocido: "El pastrón con hueso braseado por horas.", estrellas: 4.7, lleno: false },
+    "El Preferido": { desc: "Bodegón porteño restaurado. Un clásico de Palermo para comer comida casera en un ambiente histórico.", conocido: "La milanesa de bife de chorizo y sus embutidos.", estrellas: 4.8, lleno: false },
+    "Makena Cantina": { desc: "Bar y cantina musical icónica. Punto de encuentro para escuchar funk, soul y blues.", conocido: "Música negra en vivo y excelente coctelería.", estrellas: 4.4, lleno: false }
+  };
+
+  let restauranteActual = "";
+
+  function verDetallesRestaurante(nombre) {
+    restauranteActual = nombre;
+    let info = infoRestaurantes[nombre] || { desc: "Un excelente lugar para disfrutar con amigos o en pareja.", conocido: "Su cálida atención y menú variado.", estrellas: 4.5, lleno: false };
+    
+    document.getElementById('detalles-nombre').innerText = nombre;
+    document.getElementById('detalles-estrellas').innerText = info.estrellas;
+    document.getElementById('detalles-desc').innerText = info.desc;
+    document.getElementById('detalles-conocido').innerText = info.conocido;
+    
+    const bottomBar = document.getElementById('detalles-bottom-bar');
+    if(info.lleno) {
+      bottomBar.innerHTML = `
+        <div style="flex:1; display:flex; align-items:center; font-size:13px; font-weight:600; color:var(--alert);">⚠️ Sin mesas</div>
+        <button class="btn-primary" style="flex:1.5; background:var(--ink);" onclick="activarRadar()">🔔 Radar de Cancelaciones</button>
+      `;
+    } else {
+      bottomBar.innerHTML = `
+        <button class="btn-secondary" style="flex:1;" onclick="unirseFilaVirtual()">⏳ Fila Virtual</button>
+        <button class="btn-primary" style="flex:1.5;" onclick="iniciarReservaDesdeDetalles()">Reservar Mesa</button>
+      `;
+    }
+    cambiarVista('vista-detalles');
+  }
+
+  function iniciarReservaDesdeDetalles() {
+    document.getElementById('titulo-reserva').innerText = restauranteActual;
+    cambiarVista('vista-reserva');
+  }
+
+  function activarRadar() {
+    mostrarDialogoCustom("Radar Activado 🔔", `¡Estás en el Radar de ${restauranteActual}!\n\nTe enviaremos un aviso inmediato si alguien cancela su mesa para que puedas reservarla.`, false, () => {
+      cambiarVista('vista-cliente');
+    });
+  }
+
+  // --- AUTOCOMPLETADOS ---
+  const bdRestaurantes = Object.keys(infoRestaurantes);
+  const inputBuscador = document.getElementById('buscador');
+  const listaAuto = document.getElementById('lista-autocompletado');
+
+  inputBuscador.addEventListener('input', function() {
+    let val = this.value; listaAuto.innerHTML = '';
+    if (!val) { listaAuto.style.display = 'none'; return; }
+    let matches = bdRestaurantes.filter(r => r.toLowerCase().includes(val.toLowerCase()));
+    if (matches.length > 0) {
+      listaAuto.style.display = 'block';
+      matches.forEach(match => {
+        let div = document.createElement('div'); div.className = 'autocomplete-item';
+        div.innerHTML = match.replace(new RegExp(`(${val})`, "gi"), "<strong>$1</strong>");
+        div.onclick = function() { listaAuto.style.display = 'none'; inputBuscador.value = ''; verDetallesRestaurante(match); };
+        listaAuto.appendChild(div);
+      });
+    } else { listaAuto.style.display = 'none'; }
+  });
+
+  const bdCiudades = ["CABA", "Quilmes", "Avellaneda", "Lanús", "San Isidro", "Vicente López", "Tigre", "Pilar", "La Plata"];
+  const inputUbicacion = document.getElementById('input-ubicacion');
+  const listaUbicacion = document.getElementById('lista-auto-ubicacion');
+
+  inputUbicacion.addEventListener('input', function() {
+    let val = this.value; listaUbicacion.innerHTML = '';
+    if (!val) { listaUbicacion.style.display = 'none'; return; }
+    let matches = bdCiudades.filter(c => c.toLowerCase().includes(val.toLowerCase()));
+    if (matches.length > 0) {
+      listaUbicacion.style.display = 'block';
+      matches.forEach(match => {
+        let div = document.createElement('div'); div.className = 'autocomplete-item';
+        div.innerHTML = match.replace(new RegExp(`(${val})`, "gi"), "<strong>$1</strong>");
+        div.onclick = function() { listaUbicacion.style.display = 'none'; inputUbicacion.value = match; };
+        listaUbicacion.appendChild(div);
+      });
+    } else { listaUbicacion.style.display = 'none'; }
+  });
+
+  document.addEventListener('mousedown', function(e) {
+    if (!e.target.closest('.search-container')) listaAuto.style.display = 'none';
+    if (!e.target.closest('.input-group')) listaUbicacion.style.display = 'none';
+  });
+
+  // --- INTERESES DINÁMICOS ---
+  let misGustos = ["🍔 Hamburguesas", "🍝 Pastas", "🥩 Parrilla", "🍕 Pizzas", "🍣 Sushi"];
+  function renderGustos() {
+    const contenedor = document.getElementById('contenedor-gustos'); contenedor.innerHTML = '';
+    misGustos.forEach((gusto, index) => {
+      contenedor.innerHTML += `<div class="tag">${gusto} <div class="tag-remove" onclick="eliminarGusto(${index})">×</div></div>`;
+    });
+    contenedor.innerHTML += `<div class="tag" style="padding: 2px 10px;"><input type="text" class="add-tag-input" placeholder="+ Agregar" onkeypress="handleGustoKey(event)"></div>`;
+  }
+  function eliminarGusto(index) { misGustos.splice(index, 1); renderGustos(); }
+  function handleGustoKey(e) {
+    if (e.key === 'Enter') { e.preventDefault(); let val = e.target.value.trim(); if (val !== "") { misGustos.push(val); renderGustos(); } }
+  }
+
+  // --- RENDERING DINÁMICO DE RESERVAS DEL CLIENTE ---
+  function renderMisReservasCliente() {
+    const contenedor = document.getElementById('contenedor-mis-reservas');
+    const estadoVacio = document.getElementById('reservas-vacias');
+    
+    contenedor.innerHTML = '';
+
+    if(misReservasCliente.length === 0 && filaVirtualLocal.length === 0) {
+      estadoVacio.style.display = 'flex';
+    } else {
+      estadoVacio.style.display = 'none';
+
+      filaVirtualLocal.forEach(fila => {
+        contenedor.innerHTML += `
+          <div class="reserva-activa-card" style="border-color: var(--warning); box-shadow: 0 8px 24px rgba(245, 124, 0, 0.15);">
+            <div class="res-activa-header">
+              <div>
+                <div class="res-activa-title">${fila.restaurante}</div>
+                <div class="res-activa-meta">Lista de espera virtual</div>
+              </div>
+              <div style="background: #FFF3E0; padding: 8px; border-radius: 12px; text-align:center;">
+                <div style="font-size: 10px; font-weight:600; color:var(--warning); text-transform:uppercase;">Fila</div>
+                <div style="font-size: 18px; font-weight:700; font-family:'Fraunces';">3ro</div>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Tiempo estimado: <strong>15 min</strong>. Acercate a la puerta. Te da prioridad pero no garantiza mesa.</div>
+          </div>
+        `;
+      });
+
+      misReservasCliente.forEach((reserva, index) => {
+        contenedor.innerHTML += `
+          <div class="reserva-activa-card">
+            <div class="res-activa-header">
+              <div>
+                <div class="res-activa-title">${reserva.restaurante}</div>
+                <div class="res-activa-meta">Hoy, 21:00 • Mesa para ${reserva.personas}</div>
+              </div>
+              <div style="background: var(--paper-warm); padding: 8px; border-radius: 12px; text-align:center;">
+                <div style="font-size: 10px; font-weight:600; color:var(--clay); text-transform:uppercase;">Mesa</div>
+                <div style="font-size: 18px; font-weight:700; font-family:'Fraunces';">#${Math.floor(Math.random() * 10) + 1}</div>
+              </div>
+            </div>
+            
+            <div class="action-row">
+              <span style="font-size: 14px; font-weight: 500;">🔔 Recordarme 1h antes</span>
+              <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+            </div>
+            
+            <button class="btn-calendar">📅 Agregar a Google Calendar</button>
+            <button class="btn-wsp" onclick="activarMesaCompartidaDin(${index})">👥 Armar mesa compartida</button>
+            
+            <div id="mesa-compartida-din-${index}" class="d-none" style="margin-top: 16px; padding: 16px; background: var(--paper-warm); border-radius: 16px;">
+              <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">Amigos confirmados (1/${reserva.personas})</div>
+              <div class="avatar-group">
+                <div class="avatar" style="background:#4A5A3E;">${nombreUsuario.charAt(0)}</div>
+                <div class="avatar empty" onclick="mostrarToast('Link copiado. ¡Mándaselo a tus amigos!')">+</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  function unirseFilaVirtual() {
+    mostrarDialogoCustom("Fila Virtual", `Anotarte en la fila de ${restauranteActual} te da prioridad en puerta, pero NO garantiza mesa si el local se llena.\n\n¿Querés anotarte de todas formas?`, true, () => {
+      document.getElementById('reservas-vacias').style.display = 'none';
+      document.getElementById('fila-activa-container').classList.remove('d-none');
+      document.getElementById('fila-nombre').innerText = restauranteActual;
+      filaVirtualLocal.push({ id: Date.now(), nombre: nombreUsuario, restaurante: restauranteActual });
+      renderMesasYProgreso();
+      cambiarVista('vista-cliente');
+      cambiarTabCliente('tab-reservas', document.getElementById('nav-reservas'));
+      mostrarToast("¡Te uniste a la fila con éxito!");
+    });
+  }
+
+  function activarMesaCompartidaDin(index) {
+    document.getElementById(`mesa-compartida-din-${index}`).classList.remove('d-none');
+    mostrarToast("Link de mesa compartida copiado.");
+  }
+
+  function enviarQueja(btn) {
+    let textarea = btn.previousElementSibling.querySelector('textarea');
+    if(textarea.value.trim() === "") { mostrarDialogoCustom("Atención", "Por favor escribí un comentario.", false); return; }
+    mostrarToast("¡Gracias por tu mensaje!"); textarea.value = "";
+  }
+
+  // --- PROCESAMIENTO DE RESERVAS ---
+  function procesarReserva() {
+    let cantPersonas = parseInt(document.getElementById('res-personas').value);
+    document.getElementById('btn-text').style.display = 'none';
+    document.getElementById('btn-spinner').style.display = 'block';
+    
+    setTimeout(() => {
+      document.getElementById('btn-text').style.display = 'block';
+      document.getElementById('btn-spinner').style.display = 'none';
+      
+      if(cantPersonas > 8) { mostrarDialogoCustom("Sin mesas", "Lo sentimos, no hay disponibilidad para esa cantidad de personas.", false); return; }
+
+      misReservasCliente.push({
+        restaurante: restauranteActual,
+        personas: cantPersonas
+      });
+
+      renderMisReservasCliente();
+      
+      if(restauranteActual === "Big Pons" || restauranteActual === "La Carnicería") agregarReservaAlLocal(nombreUsuario, cantPersonas);
+
+      cambiarVista('vista-cliente');
+      cambiarTabCliente('tab-reservas', document.getElementById('nav-reservas'));
+      mostrarToast("¡Reserva confirmada!");
+    }, 1200); 
+  }
+
+  // --- PANEL ADMINISTRATIVO RESTAURANTE ---
+  let misMesas = [{ nro: 1, cap: 2, ocupada: false }, { nro: 2, cap: 2, ocupada: false }, { nro: 3, cap: 4, ocupada: true }, { nro: 4, cap: 4, ocupada: false }];
+  let reservasActivas = [ { id: 1, nombre: "Invitado Anterior", personas: 4, mesa: 3, time: "20:30" } ];
+
+  function renderMesasYProgreso() {
+    let capTotal = misMesas.reduce((acc, m) => acc + m.cap, 0);
+    let capOcupada = misMesas.filter(m => m.ocupada).reduce((acc, m) => acc + m.cap, 0);
+    let porcentaje = capTotal > 0 ? Math.round((capOcupada / capTotal) * 100) : 0;
+    
+    document.getElementById('occupancy-bar').style.width = porcentaje + '%';
+    document.getElementById('occupancy-text').innerText = porcentaje + '%';
+
+    const contenedor = document.getElementById('contenedor-mesas'); contenedor.innerHTML = '';
+    misMesas.forEach(m => {
+      let div = document.createElement('div'); div.className = `mesa ${m.ocupada ? 'ocupada' : 'libre'}`; div.innerText = m.nro;
+      contenedor.appendChild(div);
+    });
+
+    const listaHtml = document.getElementById('lista-reservas-local'); listaHtml.innerHTML = '';
+    reservasActivas.forEach(res => {
+      listaHtml.innerHTML += `
+        <div class="reservation-card" id="res-${res.id}">
+          <div class="res-time">${res.time}</div>
+          <div class="res-details"><div class="res-name">${res.nombre}</div><div style="font-size:13px; color:var(--muted)">Mesa ${res.mesa} • ${res.personas} pers</div></div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end;">
+            <div class="res-status">Confirmada</div><button class="cancel-btn" onclick="cancelarReservaLocal(${res.id}, ${res.mesa})">Cancelar</button>
+          </div>
+        </div>
+      `;
+    });
+
+    const listaEsperaHtml = document.getElementById('lista-espera-local'); listaEsperaHtml.innerHTML = '';
+    if(filaVirtualLocal.length === 0) {
+      listaEsperaHtml.innerHTML = '<p style="font-size:13px; color:var(--muted);">No hay nadie en fila.</p>';
+    } else {
+      filaVirtualLocal.forEach((persona, index) => {
+        listaEsperaHtml.innerHTML += `
+          <div class="reservation-card" style="border-color: var(--warning);">
+            <div class="res-time" style="color:var(--warning); font-size:14px;">#${index + 1}</div>
+            <div class="res-details"><div class="res-name">${persona.nombre}</div><div style="font-size:13px; color:var(--muted)">Fila Virtual</div></div>
+            <div class="res-status espera">Esperando</div>
+          </div>
+        `;
+      });
+    }
+    document.getElementById('total-reservas').innerText = reservasActivas.length;
+    document.getElementById('total-cubiertos').innerText = capOcupada;
+  }
+
+  function agregarReservaAlLocal(nombre, personas) {
+    let mesaLibre = misMesas.find(m => m.cap >= personas && !m.ocupada);
+    if(mesaLibre) {
+      mesaLibre.ocupada = true;
+      reservasActivas.push({ id: Date.now(), nombre: nombre, personas: personas, mesa: mesaLibre.nro, time: "21:00" });
+      renderMesasYProgreso();
+    }
+  }
+
+  function cancelarReservaLocal(idReserva, idMesa) {
+    mostrarDialogoCustom("Cancelar", "¿Seguro que querés dar de baja esta mesa?", true, () => {
+      let mesa = misMesas.find(m => m.nro === idMesa); if(mesa) mesa.ocupada = false;
+      reservasActivas = reservasActivas.filter(r => r.id !== idReserva);
+      renderMesasYProgreso(); mostrarToast("Mesa liberada.");
+    });
+  }
+
+  function cargarConfigMesas() {
+    const lista = document.getElementById('lista-config-mesas'); lista.innerHTML = '';
+    misMesas.forEach((mesa, index) => {
+      lista.innerHTML += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:12px; border:1px solid var(--line); border-radius:12px;">
+          <div><strong>Mesa ${mesa.nro}</strong></div>
+          <div>Cap: <input type="number" id="edit-cap-${index}" value="${mesa.cap}" min="1" style="width:50px; text-align:center;"></div>
+        </div>
+      `;
+    });
+  }
+  function agregarMesaConfig() { misMesas.push({ nro: misMesas.length + 1, cap: 2, ocupada: false }); cargarConfigMesas(); }
+  function guardarConfigMesas() {
+    misMesas.forEach((mesa, index) => {
+      let input = document.getElementById(`edit-cap-${index}`); if(input) mesa.cap = parseInt(input.value);
+    });
+    cerrarModal('configMesasModal'); renderMesasYProgreso(); mostrarToast("Configuración guardada.");
+  }
+</script>
+</body>
+</html>
