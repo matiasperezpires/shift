@@ -6,7 +6,7 @@
 <title>Shift - Prototipo Maestro</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ==================== RESET Y VARIABLES ==================== */
+/* ==================== RESET Y VARIABLES (MODO CLARO ORIGINAL) ==================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --ink: #16140F; --paper: #F6F1E7; --paper-warm: #EFE7D8;
@@ -30,8 +30,8 @@ body { font-family: 'Inter', sans-serif; background: #E8E2D3; color: var(--ink);
 body.desktop-mode { padding: 0; height: 100vh; overflow: hidden; }
 body.desktop-mode .phone-frame { max-width: 100vw; width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; box-shadow: none; display: flex; flex-direction: column; background: var(--paper); }
 
-/* Grilla Web Cliente */
-body.desktop-mode #vista-cliente { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: 75px 1fr; height: 100vh; max-height: 100vh; width: 100%; background: var(--paper); }
+/* Grilla Web Unificada */
+body.desktop-mode #vista-cliente, body.desktop-mode #vista-restaurante { display: grid; grid-template-columns: 260px 1fr; grid-template-rows: 75px 1fr; height: 100vh; max-height: 100vh; width: 100%; background: var(--paper); }
 body.desktop-mode .topbar { grid-column: 2; grid-row: 1; border-bottom: 1px solid var(--line); background: var(--paper); padding: 0 40px; }
 body.desktop-mode .tab-content { grid-column: 2; grid-row: 2; padding: 40px; overflow-y: auto; max-width: 1000px; margin: 0 auto; width: 100%; min-height: 0; }
 body.desktop-mode .tab-content.active { display: flex; }
@@ -46,10 +46,6 @@ body.desktop-mode .filters { display: flex !important; flex-wrap: wrap; margin-b
 body.desktop-mode .tonight-scroll { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; gap: 16px; display: flex; }
 body.desktop-mode .spot-card { width: calc(33.333% - 11px); min-width: 220px; }
 body.desktop-mode .perfil-form { max-width: 500px; }
-
-/* Modo Local (Restaurante Web) */
-body.desktop-mode #vista-restaurante { background: var(--paper); align-items: center; height: 100vh; overflow-y: auto; }
-body.desktop-mode .content-local { max-width: 1000px; margin: 0 auto; width: 100%; padding: 40px; }
 
 /* Centrado Vistas Detalle/Reserva (Modales flotantes en PC) */
 body.desktop-mode #vista-detalles, body.desktop-mode #vista-reserva { background: rgba(22,20,15,0.4); backdrop-filter: blur(5px); justify-content: center; align-items: center; position: fixed; inset: 0; z-index: 100; height: 100vh; }
@@ -73,8 +69,8 @@ body.desktop-mode #vista-reserva .tab-content { padding: 40px; max-width: 100%; 
 .header-title { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; margin-bottom: 4px; }
 .btn-back { background: var(--paper-warm); border: 1px solid var(--line); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
-/* TABS CLIENTE */
-.tab-content { display: none; flex: 1; flex-direction: column; padding: 10px 24px 0; overflow-y: auto; }
+/* TABS (GENERAL) */
+.tab-content { display: none; flex: 1; flex-direction: column; padding: 24px 24px 0; overflow-y: auto; overflow-x: hidden; }
 .tab-content.active { display: flex; }
 .greeting { font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
 .hero-title { font-family: 'Fraunces', serif; font-size: 38px; line-height: 1.08; font-weight: 500; margin-bottom: 14px; max-width: 320px; }
@@ -111,7 +107,7 @@ body.desktop-mode #vista-reserva .tab-content { padding: 40px; max-width: 100%; 
 /* MIS RESERVAS Y CUENTA */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; color: var(--muted); padding: 40px 0; }
 .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; stroke: var(--line); }
-.reserva-activa-card { background: white; border: 1px solid var(--clay); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(193, 96, 43, 0.15); margin-bottom: 16px; position: relative; overflow: hidden; flex-shrink: 0; }
+.reserva-activa-card { background: white; border: 1px solid var(--line); border-radius: 20px; padding: 20px; position: relative; overflow: hidden; flex-shrink: 0; }
 .res-activa-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
 .res-activa-title { font-family: 'Fraunces'; font-size: 22px; font-weight: 600; color: var(--ink); }
 .res-activa-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
@@ -155,26 +151,26 @@ body.desktop-mode #vista-reserva .tab-content { padding: 40px; max-width: 100%; 
 .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* VISTA RESTAURANTE (DASHBOARD PREMIUM) */
-.content-local { padding: 24px; flex: 1; overflow-y: auto; background: var(--paper); }
-.dashboard-header { background: linear-gradient(135deg, var(--ink), var(--clay-deep)); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(193, 96, 43, 0.15); display: flex; flex-direction: column; gap: 12px; }
+/* VISTA RESTAURANTE (DASHBOARD PREMIUM CLARO) */
+.dashboard-header { background: linear-gradient(135deg, var(--ink), var(--clay-deep)); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(193, 96, 43, 0.15); display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
 .dashboard-header-bg-circle { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%; z-index: 1; }
 .dashboard-header-content { position: relative; z-index: 2; }
-.dashboard-header-title { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 600; margin-bottom: 16px; margin-top: 0; }
-.dashboard-header-quote { font-size: 18px; line-height: 1.4; color: var(--paper-warm); font-style: italic; font-weight: 500; max-width: 90%; }
+.dashboard-header-title { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 600; margin-bottom: 12px; margin-top: 0; color: white; }
+.dashboard-header-quote { font-size: 16px; line-height: 1.4; color: var(--paper-warm); font-style: italic; font-weight: 500; max-width: 90%; }
+.dashboard-header-quote strong { color: white; font-weight: 600; }
 
-.occupancy-container { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 18px; margin-bottom: 24px; box-shadow: 0 6px 16px rgba(0,0,0,0.03); }
+.occupancy-container { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 24px; flex-shrink: 0; }
 .occupancy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
 .progress-bg { width: 100%; height: 10px; background: var(--paper-warm); border-radius: 10px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.4s ease; }
 
-.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
-.metric-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 18px; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; }
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; flex-shrink: 0; }
+.metric-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 18px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
 .metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
 .metric-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin-bottom: 4px; color: var(--ink); }
 .metric-label { font-size: 12px; color: var(--muted); font-weight: 500; }
 
-.reservation-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 16px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+.reservation-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; align-items: center; margin-bottom: 12px; flex-shrink: 0; }
 .res-time { font-size: 18px; font-weight: 600; color: var(--clay-deep); width: 60px; }
 .res-details { flex: 1; }
 .res-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
@@ -224,13 +220,13 @@ body.desktop-mode .toast-container { bottom: 30px; }
     <div class="topbar">
       <div class="brand">shift<span class="dot">.</span></div>
       <div class="top-actions">
-        <button class="switch-btn" id="layout-toggle-btn" onclick="alternarLayoutFisico()">🖥️ Modo PC</button>
+        <button class="switch-btn btn-layout-toggle" onclick="alternarLayoutFisico()">🖥️ Modo PC</button>
         <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-restaurante')">Modo Local</button>
       </div>
     </div>
 
     <!-- TAB 1: BUSCAR -->
-    <div id="tab-buscar" class="tab-content active">
+    <div id="tab-buscar" class="tab-content active" style="padding-top: 24px;">
       <div class="greeting" id="texto-saludo">Hola 👋</div>
       <h1 class="hero-title">Tu próxima mesa a <em>un solo click</em></h1>
       
@@ -303,7 +299,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
       </div>
 
       <!-- Contenedor dinámico de reservas -->
-      <div id="contenedor-mis-reservas" style="display:flex; flex-direction:column; gap:16px;"></div>
+      <div id="contenedor-mis-reservas" style="display:flex; flex-direction:column;"></div>
     </div>
 
     <!-- TAB 3: CUENTA -->
@@ -421,17 +417,22 @@ body.desktop-mode .toast-container { bottom: 30px; }
   <!-- ==================== VISTA RESTAURANTE (DASHBOARD) ==================== -->
   <div id="vista-restaurante" class="vista-wrapper d-none">
     <div class="topbar bordered">
-      <div class="brand">shift. <span class="badge-rol" id="nombre-local-badge">Panel de Control</span></div>
-      <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-cliente')">Volver a Cliente</button>
+      <div class="brand">shift. <span class="badge-rol">Panel de Control</span></div>
+      <div class="top-actions">
+        <button class="switch-btn btn-layout-toggle" onclick="alternarLayoutFisico()">🖥️ Modo PC</button>
+        <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-cliente')">Modo Cliente</button>
+      </div>
     </div>
-    <div class="content-local">
+    
+    <!-- TAB 1: PANEL (CASITA) -->
+    <div id="tab-panel-local" class="tab-content active" style="padding-top: 24px;">
       
-      <!-- HEADER DASHBOARD PREMIUM -->
+      <!-- HEADER DASHBOARD PREMIUM CLARO -->
       <div class="dashboard-header">
         <div class="dashboard-header-bg-circle"></div>
         <div class="dashboard-header-content">
           <h1 class="dashboard-header-title">Panel de Control</h1>
-          <p class="dashboard-header-quote">"Tus clientes reservan mesa a cualquier hora.<br>Vos no tenés que responder nada."</p>
+          <p class="dashboard-header-quote">"Tus clientes reservan mesa a cualquier hora.<br><strong>Vos no tenés que responder nada.</strong>"</p>
         </div>
       </div>
 
@@ -450,11 +451,51 @@ body.desktop-mode .toast-container { bottom: 30px; }
         </div>
       </div>
       
-      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px;">Líneas de llegada</div>
-      <div id="lista-reservas-local"></div>
+      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px; flex-shrink: 0;">Líneas de llegada</div>
+      <div id="lista-reservas-local" style="flex-shrink: 0;"></div>
 
-      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px; margin-top: 32px; color: var(--clay-deep);">Fila Virtual (Espera)</div>
-      <div id="lista-espera-local"></div>
+      <div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 500; margin-bottom: 16px; margin-top: 32px; color: var(--clay-deep); flex-shrink: 0;">Fila Virtual (Espera)</div>
+      <div id="lista-espera-local" style="flex-shrink: 0;"></div>
+    </div>
+
+    <!-- TAB 2: AJUSTES (TUERCA) -->
+    <div id="tab-ajustes-local" class="tab-content" style="padding-top: 24px;">
+      <h1 class="header-title">Ajustes del Local</h1>
+      <p style="font-size: 13px; color: var(--muted);">Administrá la información y preferencias de tu restaurante.</p>
+      
+      <div class="perfil-form">
+        <div class="input-group">
+          <label>Nombre del Local</label>
+          <input type="text" value="La Carnicería">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="input-group">
+            <label>Capacidad (Mesas)</label>
+            <input type="number" value="15">
+          </div>
+          <div class="input-group">
+            <label>Ubicación</label>
+            <input type="text" value="CABA">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Contraseña de Acceso</label>
+          <input type="password" value="********">
+        </div>
+        <button class="btn-secondary" style="margin-top: 16px;" onclick="mostrarToast('Ajustes guardados con éxito')">Guardar Cambios</button>
+      </div>
+    </div>
+
+    <!-- NAVEGACIÓN RESTAURANTE (Bottom Nav) -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="cambiarTabRestaurante('tab-panel-local', this)">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        Inicio
+      </div>
+      <div class="nav-item" onclick="cambiarTabRestaurante('tab-ajustes-local', this)">
+        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 005 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Ajustes
+      </div>
     </div>
   </div>
 
@@ -579,20 +620,19 @@ body.desktop-mode .toast-container { bottom: 30px; }
 
   // --- CONTROLADOR DE LAYOUT DINÁMICO ---
   function alternarLayoutFisico() {
-    const btn = document.getElementById('layout-toggle-btn');
-    if (document.body.classList.contains('desktop-mode')) {
+    const isDesktop = document.body.classList.contains('desktop-mode');
+    if (isDesktop) {
       document.body.classList.remove('desktop-mode');
-      btn.innerText = "🖥️ Modo PC";
+      document.querySelectorAll('.btn-layout-toggle').forEach(btn => btn.innerText = "🖥️ Modo PC");
       mostrarToast("Vista de Celular activada");
     } else {
       document.body.classList.add('desktop-mode');
-      btn.innerText = "📱 Modo Celular";
+      document.querySelectorAll('.btn-layout-toggle').forEach(btn => btn.innerText = "📱 Modo Celular");
       mostrarToast("Vista de Computadora Web activada");
     }
   }
 
   // --- SISTEMA DE DIÁLOGOS NATIVOS CUSTOM ---
-  let dialogCallback = null;
   function mostrarToast(mensaje) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -600,31 +640,35 @@ body.desktop-mode .toast-container { bottom: 30px; }
     container.appendChild(toast);
     setTimeout(() => { toast.remove(); }, 3000);
   }
+  
   function mostrarDialogoCustom(titulo, mensaje, esConfirmacion, onAceptar) {
     document.getElementById('custom-dialog-title').innerText = titulo;
     document.getElementById('custom-dialog-message').innerText = mensaje;
+    
     const btnCancel = document.getElementById('custom-dialog-cancel');
     btnCancel.style.display = esConfirmacion ? 'block' : 'none';
-    dialogCallback = onAceptar;
+    
+    // Aseguramos que el evento del botón Aceptar funcione y corra la acción pedida
+    const btnConfirm = document.getElementById('custom-dialog-confirm');
+    btnConfirm.onclick = () => {
+      cerrarCustomDialog();
+      if (onAceptar) onAceptar();
+    };
+    
     document.getElementById('custom-dialog-overlay').style.display = 'flex';
   }
+  
   function cerrarCustomDialog() {
     document.getElementById('custom-dialog-overlay').style.display = 'none';
-    dialogCallback = null;
   }
-  document.getElementById('custom-dialog-confirm').addEventListener('click', () => {
-    if(dialogCallback) dialogCallback();
-    cerrarCustomDialog();
-  });
 
   // --- ONBOARDING FLOW ---
   function seleccionarDispositivo(tipo) {
-    const btn = document.getElementById('layout-toggle-btn');
     if(tipo === 'desktop') {
       document.body.classList.add('desktop-mode');
-      btn.innerText = "📱 Modo Celular";
+      document.querySelectorAll('.btn-layout-toggle').forEach(btn => btn.innerText = "📱 Modo Celular");
     } else {
-      btn.innerText = "🖥️ Modo PC";
+      document.querySelectorAll('.btn-layout-toggle').forEach(btn => btn.innerText = "🖥️ Modo PC");
     }
     document.getElementById('onboarding-device').style.display = 'none';
     document.getElementById('onboarding-name').style.display = 'flex';
@@ -668,7 +712,22 @@ body.desktop-mode .toast-container { bottom: 30px; }
     document.getElementById(idTab).classList.add('active');
     
     if(element) {
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const navPadre = element.closest('.bottom-nav');
+      navPadre.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      element.classList.add('active');
+    }
+  }
+
+  // NAVEGACIÓN EXCLUSIVA PARA EL RESTAURANTE
+  function cambiarTabRestaurante(idTab, element = null) {
+    document.getElementById('tab-panel-local').classList.remove('active');
+    document.getElementById('tab-ajustes-local').classList.remove('active');
+    
+    document.getElementById(idTab).classList.add('active');
+    
+    if(element) {
+      const navPadre = element.closest('.bottom-nav');
+      navPadre.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
       element.classList.add('active');
     }
   }
@@ -811,56 +870,66 @@ body.desktop-mode .toast-container { bottom: 30px; }
     } else {
       estadoVacio.style.display = 'none';
 
-      filaVirtualLocal.forEach(fila => {
-        contenedor.innerHTML += `
-          <div class="reserva-activa-card" style="border-color: var(--warning); box-shadow: 0 8px 24px rgba(245, 124, 0, 0.15);">
-            <div class="res-activa-header">
-              <div>
-                <div class="res-activa-title">${fila.restaurante}</div>
-                <div class="res-activa-meta">Lista de espera virtual</div>
+      // 1. Mostrar Listas de Espera
+      if(filaVirtualLocal.length > 0) {
+        contenedor.innerHTML += `<div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 600; color: var(--clay-deep); margin-bottom: 4px;">Fila Virtual Activa</div>`;
+        
+        filaVirtualLocal.forEach(fila => {
+          contenedor.innerHTML += `
+            <div class="reserva-activa-card" style="border-color: rgba(255, 171, 0, 0.4); box-shadow: 0 8px 24px rgba(255, 171, 0, 0.05); margin-bottom: 24px;">
+              <div class="res-activa-header">
+                <div>
+                  <div class="res-activa-title">${fila.restaurante}</div>
+                  <div class="res-activa-meta">Lista de espera virtual</div>
+                </div>
+                <div style="background: rgba(255, 171, 0, 0.1); padding: 8px; border-radius: 12px; text-align:center;">
+                  <div style="font-size: 10px; font-weight:600; color:var(--warning); text-transform:uppercase;">Posición</div>
+                  <div style="font-size: 18px; font-weight:700; font-family:'Fraunces'; color:var(--ink);">3ro</div>
+                </div>
               </div>
-              <div style="background: #FFF3E0; padding: 8px; border-radius: 12px; text-align:center;">
-                <div style="font-size: 10px; font-weight:600; color:var(--warning); text-transform:uppercase;">Fila</div>
-                <div style="font-size: 18px; font-weight:700; font-family:'Fraunces';">3ro</div>
-              </div>
+              <div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Tiempo estimado: <strong style="color:var(--ink);">15 min</strong>. Acercate a la puerta. Te da prioridad pero no garantiza mesa.</div>
             </div>
-            <div style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Tiempo estimado: <strong>15 min</strong>. Acercate a la puerta. Te da prioridad pero no garantiza mesa.</div>
-          </div>
-        `;
-      });
+          `;
+        });
+      }
 
-      misReservasCliente.forEach((reserva, index) => {
-        contenedor.innerHTML += `
-          <div class="reserva-activa-card">
-            <div class="res-activa-header">
-              <div>
-                <div class="res-activa-title">${reserva.restaurante}</div>
-                <div class="res-activa-meta">Hoy, 21:00 • Mesa para ${reserva.personas}</div>
+      // 2. Mostrar Reservas Confirmadas
+      if(misReservasCliente.length > 0) {
+        contenedor.innerHTML += `<div style="font-family: 'Fraunces'; font-size: 18px; font-weight: 600; margin-bottom: 4px; margin-top: ${filaVirtualLocal.length > 0 ? '8px' : '0'};">Próximas Mesas</div>`;
+        
+        misReservasCliente.forEach((reserva, index) => {
+          contenedor.innerHTML += `
+            <div class="reserva-activa-card" style="margin-bottom: 24px;">
+              <div class="res-activa-header">
+                <div>
+                  <div class="res-activa-title">${reserva.restaurante}</div>
+                  <div class="res-activa-meta">Hoy, 21:00 • Mesa para ${reserva.personas}</div>
+                </div>
+                <div style="background: var(--paper-warm); padding: 8px; border-radius: 12px; text-align:center;">
+                  <div style="font-size: 10px; font-weight:600; color:var(--clay); text-transform:uppercase;">Mesa</div>
+                  <div style="font-size: 18px; font-weight:700; font-family:'Fraunces'; color:var(--ink);">#${Math.floor(Math.random() * 10) + 1}</div>
+                </div>
               </div>
-              <div style="background: var(--paper-warm); padding: 8px; border-radius: 12px; text-align:center;">
-                <div style="font-size: 10px; font-weight:600; color:var(--clay); text-transform:uppercase;">Mesa</div>
-                <div style="font-size: 18px; font-weight:700; font-family:'Fraunces';">#${Math.floor(Math.random() * 10) + 1}</div>
+              
+              <div class="action-row">
+                <span style="font-size: 14px; font-weight: 500; color: var(--ink);">🔔 Recordarme 1h antes</span>
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+              </div>
+              
+              <button class="btn-calendar">📅 Agregar a Google Calendar</button>
+              <button class="btn-wsp" onclick="activarMesaCompartidaDin(${index})">👥 Armar mesa compartida</button>
+              
+              <div id="mesa-compartida-din-${index}" class="d-none" style="margin-top: 16px; padding: 16px; background: var(--paper-warm); border-radius: 16px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--ink);">Amigos confirmados (1/${reserva.personas})</div>
+                <div class="avatar-group">
+                  <div class="avatar" style="background:var(--success); color:#000;">${nombreUsuario.charAt(0)}</div>
+                  <div class="avatar empty" onclick="mostrarToast('Link copiado. ¡Mándaselo a tus amigos!')">+</div>
+                </div>
               </div>
             </div>
-            
-            <div class="action-row">
-              <span style="font-size: 14px; font-weight: 500;">🔔 Recordarme 1h antes</span>
-              <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
-            </div>
-            
-            <button class="btn-calendar">📅 Agregar a Google Calendar</button>
-            <button class="btn-wsp" onclick="activarMesaCompartidaDin(${index})">👥 Armar mesa compartida</button>
-            
-            <div id="mesa-compartida-din-${index}" class="d-none" style="margin-top: 16px; padding: 16px; background: var(--paper-warm); border-radius: 16px;">
-              <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px;">Amigos confirmados (1/${reserva.personas})</div>
-              <div class="avatar-group">
-                <div class="avatar" style="background:#4A5A3E;">${nombreUsuario.charAt(0)}</div>
-                <div class="avatar empty" onclick="mostrarToast('Link copiado. ¡Mándaselo a tus amigos!')">+</div>
-              </div>
-            </div>
-          </div>
-        `;
-      });
+          `;
+        });
+      }
     }
   }
 
@@ -951,7 +1020,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     } else {
       filaVirtualLocal.forEach((persona, index) => {
         listaEsperaHtml.innerHTML += `
-          <div class="reservation-card" style="border-color: var(--warning);">
+          <div class="reservation-card" style="border-color: rgba(255, 171, 0, 0.4);">
             <div class="res-time" style="color:var(--warning); font-size:14px;">#${index + 1}</div>
             <div class="res-details"><div class="res-name">${persona.nombre}</div><div style="font-size:13px; color:var(--muted)">Fila Virtual</div></div>
             <div class="res-status espera">Esperando</div>
@@ -984,7 +1053,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     const lista = document.getElementById('lista-config-mesas'); lista.innerHTML = '';
     misMesas.forEach((mesa, index) => {
       lista.innerHTML += `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:12px; border:1px solid var(--line); border-radius:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:12px; border:1px solid var(--line); border-radius:12px; color: var(--ink);">
           <div><strong>Mesa ${mesa.nro}</strong></div>
           <div>Cap: <input type="number" id="edit-cap-${index}" value="${mesa.cap}" min="1" style="width:50px; text-align:center;"></div>
         </div>
