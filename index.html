@@ -155,17 +155,26 @@ body.desktop-mode #vista-reserva .tab-content { padding: 40px; max-width: 100%; 
 .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* VISTA RESTAURANTE (DASHBOARD) */
-.content-local { padding: 24px; flex: 1; overflow-y: auto; }
-.occupancy-container { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 24px; }
+/* VISTA RESTAURANTE (DASHBOARD PREMIUM) */
+.content-local { padding: 24px; flex: 1; overflow-y: auto; background: var(--paper); }
+.dashboard-header { background: linear-gradient(135deg, var(--ink), var(--clay-deep)); border-radius: 20px; padding: 32px; margin-bottom: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(193, 96, 43, 0.15); display: flex; flex-direction: column; gap: 12px; }
+.dashboard-header-bg-circle { position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.08); border-radius: 50%; z-index: 1; }
+.dashboard-header-content { position: relative; z-index: 2; }
+.dashboard-header-title { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 600; margin-bottom: 16px; margin-top: 0; }
+.dashboard-header-quote { font-size: 18px; line-height: 1.4; color: var(--paper-warm); font-style: italic; font-weight: 500; max-width: 90%; }
+
+.occupancy-container { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 18px; margin-bottom: 24px; box-shadow: 0 6px 16px rgba(0,0,0,0.03); }
 .occupancy-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; font-weight: 600; }
 .progress-bg { width: 100%; height: 10px; background: var(--paper-warm); border-radius: 10px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--success); width: 0%; transition: 0.4s ease; }
+
 .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
-.metric-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; cursor: pointer; }
-.metric-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin-bottom: 4px; }
+.metric-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 18px; cursor: pointer; box-shadow: 0 6px 16px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s; }
+.metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.06); }
+.metric-value { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500; margin-bottom: 4px; color: var(--ink); }
 .metric-label { font-size: 12px; color: var(--muted); font-weight: 500; }
-.reservation-card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; align-items: center; margin-bottom: 12px; }
+
+.reservation-card { background: white; border: 1px solid rgba(0,0,0,0.05); border-radius: 16px; padding: 16px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
 .res-time { font-size: 18px; font-weight: 600; color: var(--clay-deep); width: 60px; }
 .res-details { flex: 1; }
 .res-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
@@ -210,6 +219,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
 
 <div class="phone-frame" id="contenedor-maestro">
 
+  <!-- ==================== VISTA CLIENTE ==================== -->
   <div id="vista-cliente" class="vista-wrapper d-none">
     <div class="topbar">
       <div class="brand">shift<span class="dot">.</span></div>
@@ -219,6 +229,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
       </div>
     </div>
 
+    <!-- TAB 1: BUSCAR -->
     <div id="tab-buscar" class="tab-content active">
       <div class="greeting" id="texto-saludo">Hola 👋</div>
       <h1 class="hero-title">Tu próxima mesa a <em>un solo click</em></h1>
@@ -231,6 +242,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
         <div class="autocomplete-list" id="lista-autocompletado"></div>
       </div>
 
+      <!-- Filtros -->
       <div class="filters">
         <div class="filter-chip active">Esta noche</div>
         <div class="filter-chip" onclick="abrirModal('cercaModal')">📍 Cerca de mí</div>
@@ -281,6 +293,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
       </div>
     </div>
 
+    <!-- TAB 2: RESERVAS -->
     <div id="tab-reservas" class="tab-content" style="padding-top: 24px;">
       <h1 class="header-title">Mis Reservas</h1>
       <div id="reservas-vacias" class="empty-state">
@@ -289,9 +302,11 @@ body.desktop-mode .toast-container { bottom: 30px; }
         <button class="btn-secondary" style="width: auto; padding: 10px 24px;" onclick="cambiarTabCliente('tab-buscar', document.getElementById('nav-buscar'))">Explorar lugares</button>
       </div>
 
+      <!-- Contenedor dinámico de reservas -->
       <div id="contenedor-mis-reservas" style="display:flex; flex-direction:column; gap:16px;"></div>
     </div>
 
+    <!-- TAB 3: CUENTA -->
     <div id="tab-cuenta" class="tab-content" style="padding-top: 24px;">
       <h1 class="header-title">Mi Perfil</h1>
       <p style="font-size: 13px; color: var(--muted);">Gestioná tu información personal y preferencias.</p>
@@ -330,6 +345,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
       </div>
     </div>
 
+    <!-- Navegación Cliente -->
     <div class="bottom-nav">
       <div class="nav-item active" id="nav-buscar" onclick="cambiarTabCliente('tab-buscar', this)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>Buscar</div>
       <div class="nav-item" id="nav-reservas" onclick="cambiarTabCliente('tab-reservas', this)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Reservas</div>
@@ -337,6 +353,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- ==================== VISTA DETALLES RESTAURANTE ==================== -->
   <div id="vista-detalles" class="vista-wrapper d-none">
     <div class="desktop-card-wrapper">
       <div class="detalles-hero">
@@ -367,6 +384,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- ==================== VISTA RESERVA (FORMULARIO) ==================== -->
   <div id="vista-reserva" class="vista-wrapper d-none">
     <div class="desktop-card-wrapper" style="background: var(--paper);">
       <div class="tab-content active" style="padding:0;">
@@ -400,13 +418,23 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- ==================== VISTA RESTAURANTE (DASHBOARD) ==================== -->
   <div id="vista-restaurante" class="vista-wrapper d-none">
     <div class="topbar bordered">
-      <div class="brand">shift. <span class="badge-rol" id="nombre-local-badge">Modo Panel</span></div>
+      <div class="brand">shift. <span class="badge-rol" id="nombre-local-badge">Panel de Control</span></div>
       <button class="switch-btn" style="background:var(--ink); color:var(--paper);" onclick="cambiarVista('vista-cliente')">Volver a Cliente</button>
     </div>
     <div class="content-local">
-      <div class="header-title" style="margin-bottom: 24px;">Servicio Nocturno</div>
+      
+      <!-- HEADER DASHBOARD PREMIUM -->
+      <div class="dashboard-header">
+        <div class="dashboard-header-bg-circle"></div>
+        <div class="dashboard-header-content">
+          <h1 class="dashboard-header-title">Panel de Control - Tu Restaurante</h1>
+          <p class="dashboard-header-quote">"Tus clientes reservan mesa a cualquier hora.<br>Vos no tenés que responder nada."</p>
+        </div>
+      </div>
+
       <div class="occupancy-container">
         <div class="occupancy-header"><span>Ocupación de Mesas</span><span id="occupancy-text">0%</span></div>
         <div class="progress-bg"><div class="progress-fill" id="occupancy-bar"></div></div>
@@ -430,6 +458,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- ==================== MODALES GLOBALES ==================== -->
   <div class="modal" id="mapaLocalModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -488,8 +517,10 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- TOASTS -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- DIÁLOGOS NATIVOS CUSTOM -->
   <div id="custom-dialog-overlay" class="dialog-overlay" style="display:none;">
     <div class="dialog-box">
       <div class="dialog-title" id="custom-dialog-title">Atención</div>
@@ -501,6 +532,7 @@ body.desktop-mode .toast-container { bottom: 30px; }
     </div>
   </div>
 
+  <!-- ONBOARDING (DEVICE & NAME & MVP) -->
   <div class="dialog-overlay" id="onboarding-device" style="display:flex;">
     <div class="dialog-box">
       <div class="dialog-title">Bienvenido a Shift</div>
@@ -527,10 +559,10 @@ body.desktop-mode .toast-container { bottom: 30px; }
       <div class="dialog-title" style="margin-bottom:16px; font-size:24px;">¡Shift V1 MVP! 🚀</div>
       <div class="dialog-message" style="font-size:13.5px; color:var(--ink);">
         Esta es la primera versión de Shift: conseguí mesa rápido y sin llamar.<br><br>
-        <strong>Próximamente en la Versión 2:</strong><br><br>
+        <strong>Próximamente en la V2:</strong><br><br>
         💸 <b>Pago Invisible:</b> Dividí la cuenta y pagá desde tu dispositivo de forma horizontal y limpia sin fricciones.<br><br>
-        ✨ <b>Efecto VIP:</b> Los restaurantes conocerán tus preferencias gastronómicas antes de tu llegada, permitiéndoles ofrecerte una experiencia más personalizada y adaptada a tus gustos.<br><br>
-        🏆 <b>Gamificación:</b> Acumulá visitas con tus amigos y desbloqueá colaboraciones exclusivas y platos de regalo de marcas gastronómicas aliadas, dentro de la app.
+        ✨ <b>Efecto VIP:</b> Los restaurantes conocerán tus preferencias gastronómicas antes de que llegues para brindarte una atención más personalizada.<br><br>
+        🏆 <b>Gamificación:</b> Acumulá visitas con tus amigos y desbloqueá colaboraciones exclusivas y platos de regalo de marcas gastronómicas aliadas.
       </div>
       <button class="btn-primary" onclick="cerrarOnboardingFinal()">Empezar a usar Shift</button>
     </div>
@@ -834,10 +866,9 @@ body.desktop-mode .toast-container { bottom: 30px; }
 
   function unirseFilaVirtual() {
     mostrarDialogoCustom("Fila Virtual", `Anotarte en la fila de ${restauranteActual} te da prioridad en puerta, pero NO garantiza mesa si el local se llena.\n\n¿Querés anotarte de todas formas?`, true, () => {
-      document.getElementById('reservas-vacias').style.display = 'none';
-      document.getElementById('fila-activa-container').classList.remove('d-none');
-      document.getElementById('fila-nombre').innerText = restauranteActual;
       filaVirtualLocal.push({ id: Date.now(), nombre: nombreUsuario, restaurante: restauranteActual });
+      
+      renderMisReservasCliente();
       renderMesasYProgreso();
       cambiarVista('vista-cliente');
       cambiarTabCliente('tab-reservas', document.getElementById('nav-reservas'));
